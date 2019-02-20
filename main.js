@@ -1,3 +1,54 @@
+const express = require('express')
+const app = express()
+const port = 3000
+
+const fs = require('fs');
+const path = require('path');
+const sanitizeHtml = require('sanitize-html');
+const template = require('./lib/template.js');
+
+//route, routing 방식
+//app.get('/', (req, res) => res.send('Hello World!'))
+app.get('/', function(request, response) {
+    fs.readdir('./data', function(error, filelist){
+      var title = 'Welcome';
+      var description = 'Hello, Node.js';
+      var list = template.list(filelist);
+      var html = template.HTML(title, list,
+        `<h2>${title}</h2>${description}`,
+        `<a href="/create">create</a>`
+      );
+      response.send(html);
+    });
+});
+
+app.get('/page/:pageId', function (req, res) {
+  fs.readdir('./data', function(error, filelist){
+    var filteredId = path.parse(req.params.pageId).base;
+    fs.readFile(`data/${filteredId}`, 'utf8', function(err, description){
+      var title = req.params.pageId;
+      var sanitizedTitle = sanitizeHtml(title);
+      var sanitizedDescription = sanitizeHtml(description, {
+        allowedTags:['h1']
+      });
+      var list = template.list(filelist);
+      var html = template.HTML(sanitizedTitle, list,
+        `<h2>${sanitizedTitle}</h2>${sanitizedDescription}`,
+        ` <a href="/create">create</a>
+          <a href="/update?id=${sanitizedTitle}">update</a>
+          <form action="delete_process" method="post">
+            <input type="hidden" name="id" value="${sanitizedTitle}">
+            <input type="submit" value="delete">
+          </form>`
+      );
+      res.send(html);
+    });
+  });
+});
+
+app.listen(port, () => console.log(`Example app listening on port ${port}!`))
+
+/*
 var http = require('http');
 var fs = require('fs');
 var url = require('url');
@@ -141,3 +192,4 @@ var app = http.createServer(function(request,response){
     }
 });
 app.listen(3000);
+*/

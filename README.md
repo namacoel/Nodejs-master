@@ -1,4 +1,5 @@
-2019.02.17 Start
+2019.02.17
+ - 깃허브에 최초 세팅함
 
 …or create a new repository on the command line
 echo "# Nodejs-master" >> README.md
